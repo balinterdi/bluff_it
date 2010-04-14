@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Bluff it</title>
+    <style type="text/css">
+      #dices {
+/*        border: 1px black solid;*/
+      }
+    </style>
+    <script type="application/javascript">
+    var dice = {
+      circle : function() {
+        ctx.beginPath();
+        ctx.arc(75, 75, 10, 0, Math.PI*2, true);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    function draw() {
+     var canvas = document.getElementById("dices");
+     var ctx = canvas.getContext("2d");
+
+     ctx.strokeStyle = "rgb(0,0,0)";
+     ctx.strokeRect(0, 0, 100, 100);
+
+     ctx.beginPath();
+     ctx.arc(50, 50, 10, 0, Math.PI*2, true);
+     ctx.closePath();
+     ctx.fill();
+
+     // ctx.moveTo(150, 0);
+     ctx.strokeStyle = "rgb(0,0,0)";
+     ctx.strokeRect(150, 0, 100, 100);
+
+     ctx.beginPath();
+     ctx.arc(225, 25, 10, 0, Math.PI*2, true);
+     ctx.closePath();
+     ctx.fill();
+
+     ctx.beginPath();
+     ctx.arc(175, 75, 10, 0, Math.PI*2, true);
+     ctx.closePath();
+     ctx.fill();
+     // ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
+     // ctx.fillRect (30, 30, 55, 50);
+    }
+    </script>
+  </head>
+  <body onload="draw()">
+    <canvas id="dices" width="300" height="300">
+    </canvas>
+  </body>
+</html>
