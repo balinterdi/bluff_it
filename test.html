@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Test suite for "Bluff it"</title>
+  	<script src="http://js.local/jquery/jquery-1.2.6.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="http://js.local/qunit/qunit.css" type="text/css" media="screen" />
+    <script type="text/javascript" src="http://js.local/qunit/qunit.js"></script>
+    <script type="application/javascript">
+      var dice = {
+        roll : function() {
+          return 1;
+        }
+      }
+      var roll = {
+        isValid : function(r) {
+          return true;
+        }
+      }
+      var player = {
+        rollTheDice : function() {
+          return "21"
+        }
+      }
+      $(document).ready(function(){
+        test("dice.roll", function() {
+          // Check that in a series of 5 dice rolls, none is outside the (1..6) range
+          // Can this be made in a simpler way?
+          var invalidRolls = $.grep([1, 2, 3, 4, 5], function(_, i){
+            var r = dice.roll();
+            return r >= 1 && r <= 6;
+          }, true)
+          ok( invalidRolls.length == 0, "roll is a number between 1 and 6")
+        });
+
+
+        test("player.rollTheDice", function() {
+          var validDiceRolls = $.grep([1, 2, 3, 4, 5], function(_, i){
+            var r = player.rollTheDice();
+            return roll.isValid(r)
+          })
+          equal(validDiceRolls.length, 5, "a dice roll is between 32 and 21")
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <h1 id="qunit-header">Bluff it</h1>
+   <h2 id="qunit-banner"></h2>
+   <h2 id="qunit-userAgent"></h2>
+   <ol id="qunit-tests"></ol>
+  </body>
+</html>
