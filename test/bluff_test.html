@@ -14,8 +14,10 @@
         }
       }
       var roll = {
+        ROLLS : ["32", "41", "42", "43", "51", "52", "53", "54", "61", "62", "63", "64", "65",
+                 "11", "22", "33", "44", "55", "66", "21"],
         isValid : function(r) {
-          return true;
+          return this.ROLLS.indexOf(r) != -1;
         }
       }
       var player = {
