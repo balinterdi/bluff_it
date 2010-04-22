@@ -7,12 +7,14 @@
     <link rel="stylesheet" href="http://js.local/qunit/qunit.css" type="text/css" media="screen" />
     <script type="text/javascript" src="http://js.local/qunit/qunit.js"></script>
     <script type="text/javascript" src="http://js.local/bluff/number.js"></script>
+    <script type="text/javascript" src="http://js.local/bluff/object.js"></script>
     <script type="application/javascript">
       var dice = {
         roll : function() {
           return 1;
         }
       }
+
       var roll = {
         ROLLS : ["32", "41", "42", "43", "51", "52", "53", "54", "61", "62", "63", "64", "65",
                  "11", "22", "33", "44", "55", "66", "21"],
@@ -20,11 +22,13 @@
           return this.ROLLS.indexOf(r) != -1;
         }
       }
+
       var player = {
         rollTheDice : function() {
           return "21"
-        }
+        },
       }
+
       $(document).ready(function(){
         test("dice.roll", function() {
           // Check that in a series of 5 dice rolls, none is outside the (1..6) range
@@ -48,6 +52,28 @@
           })
           equal(validDiceRolls.length, 5, "a dice roll is between 32 and 21")
         })
+
+        test("winning when bluff unduly called", function(){
+          var playerOne = Object.create(player);
+          var playerTwo = Object.create(player);
+          game.setHighestRoll("43");
+          playerOne.setCurrentRoll("22");
+          playerOne.annonce("22");
+          playerTwo.callBluff();
+          ok( playerOne.hasWon(), "player wins if opponent says he bluffed but he did not");
+          // ok( player.youBluffed(), "player wins if says opponent has bluffed and the opponent did")
+        });
+
+        test("winning when bluff is found out", function(){
+          var playerOne = Object.create(player);
+          var playerTwo = Object.create(player);
+          game.setHighestRoll("43");
+          playerOne.setCurrentRoll("41");
+          playerOne.annonce("22");
+          playerTwo.callBluff();
+          ok( player.youBluffed(), "player wins if says opponent has bluffed and the opponent did")
+        })
+
       })
     </script>
   </head>
