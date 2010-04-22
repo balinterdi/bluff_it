@@ -78,8 +78,8 @@
           playerOne.setCurrentRoll("22");
           playerOne.announce("22");
           playerTwo.callBluff();
+          ok( !playerTwo.hasWon(), "player loses when calling a bluff that wasn't");
           ok( playerOne.hasWon(), "player wins if opponent says he bluffed but he did not");
-          // ok( player.youBluffed(), "player wins if says opponent has bluffed and the opponent did")
         });
 
         test("winning when bluff is found out", function(){
@@ -89,7 +89,8 @@
           playerOne.setCurrentRoll("41");
           playerOne.announce("22");
           playerTwo.callBluff();
-          ok( playerTwo.hasWon(), "player wins if says opponent has bluffed and the opponent did")
+          ok( playerTwo.hasWon(), "player wins if says opponent has bluffed and the opponent did");
+          ok( !playerOne.hasWon(), "player loses if bluffs and is found out");
         })
 
       })
