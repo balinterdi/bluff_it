@@ -24,20 +24,42 @@
       }
 
       var player = {
+        name : null,
         roll : null,
         announced : null,
+        game : null,
+        state : null,
+        create : function(name, game) {
+          var plyr = Object.create(this);
+          plyr.name = name;
+          plyr.game = game;
+          return plyr;
+        },
         rollTheDice : function() {
-          return "21"
+          return "21";
         },
         setCurrentRoll : function(roll) {
-          this.roll = roll
+          this.roll = roll;
         },
         announce : function(roll) {
-          this.annonced = roll
+          this.announced = roll;
         },
-        callBluff : function() { },
+        callBluff : function(otherPlayer) {
+          var bluffFoundOut = otherPlayer.hasBluffed();
+          this.game.bluffCallHit(this, otherPlayer, bluffFoundOut);
+          return bluffFoundOut;
+        },
+        hasBluffed : function() {
+          return this.roll !== this.announced;
+        },
         hasWon: function() {
-          return true;
+          return this.state === "won";
+        },
+        youWon: function() {
+          this.state = "won";
+        },
+        youLost: function() {
+          this.state = "lost";
         }
       }
 
@@ -45,6 +67,16 @@
         highestRoll : null,
         setHighestRoll : function(roll) {
           this.currentRoll = roll;
+        },
+        bluffCallHit : function(caller, called, result) {
+          if ( result ) {
+            caller.youWon();
+            called.youLost();
+          }
+          else {
+            called.youWon();
+            caller.youLost();
+          }
         }
       }
       $(document).ready(function(){
@@ -72,23 +104,25 @@
         })
 
         test("winning when bluff unduly called", function(){
-          var playerOne = Object.create(player);
-          var playerTwo = Object.create(player);
-          game.setHighestRoll("43");
+          var theGame = Object.create(game);
+          var playerOne = player.create("Alice", theGame);
+          var playerTwo = player.create("Bob", theGame);
+          theGame.setHighestRoll("43");
           playerOne.setCurrentRoll("22");
           playerOne.announce("22");
-          playerTwo.callBluff();
+          playerTwo.callBluff(playerOne);
           ok( !playerTwo.hasWon(), "player loses when calling a bluff that wasn't");
           ok( playerOne.hasWon(), "player wins if opponent says he bluffed but he did not");
         });
 
         test("winning when bluff is found out", function(){
-          var playerOne = Object.create(player);
-          var playerTwo = Object.create(player);
-          game.setHighestRoll("43");
+          var theGame = Object.create(game);
+          var playerOne = player.create("Alice", theGame);
+          var playerTwo = player.create("Bob", theGame);
+          theGame.setHighestRoll("43");
           playerOne.setCurrentRoll("41");
           playerOne.announce("22");
-          playerTwo.callBluff();
+          playerTwo.callBluff(playerOne);
           ok( playerTwo.hasWon(), "player wins if says opponent has bluffed and the opponent did");
           ok( !playerOne.hasWon(), "player loses if bluffs and is found out");
         })
