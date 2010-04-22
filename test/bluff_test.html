@@ -34,6 +34,9 @@
           ok( invalidRolls.length == 0, "roll is a number between 1 and 6")
         });
 
+        test("roll.isValid", function(){
+          equal( roll.isValid("32"), true, "32 is a valid roll");
+        });
 
         test("player.rollTheDice", function() {
           var validDiceRolls = $.grep((1).upto(5), function(_, i){
