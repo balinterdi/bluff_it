@@ -36,6 +36,7 @@
 
         test("roll.isValid", function(){
           equal( roll.isValid("32"), true, "32 is a valid roll");
+          equal( roll.isValid("23"), false, "23 is not a valid roll, the bigger number has to be put first");
         });
 
         test("player.rollTheDice", function() {
