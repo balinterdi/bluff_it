@@ -6,6 +6,7 @@
   	<script src="http://js.local/jquery/jquery-1.2.6.js" type="text/javascript" charset="utf-8"></script>
     <link rel="stylesheet" href="http://js.local/qunit/qunit.css" type="text/css" media="screen" />
     <script type="text/javascript" src="http://js.local/qunit/qunit.js"></script>
+    <script type="text/javascript" src="http://js.local/bluff/number.js"></script>
     <script type="application/javascript">
       var dice = {
         roll : function() {
@@ -26,7 +27,7 @@
         test("dice.roll", function() {
           // Check that in a series of 5 dice rolls, none is outside the (1..6) range
           // Can this be made in a simpler way?
-          var invalidRolls = $.grep([1, 2, 3, 4, 5], function(_, i){
+          var invalidRolls = $.grep((1).upto(5), function(_, i){
             var r = dice.roll();
             return r >= 1 && r <= 6;
           }, true)
@@ -35,7 +36,7 @@
 
 
         test("player.rollTheDice", function() {
-          var validDiceRolls = $.grep([1, 2, 3, 4, 5], function(_, i){
+          var validDiceRolls = $.grep((1).upto(5), function(_, i){
             var r = player.rollTheDice();
             return roll.isValid(r)
           })

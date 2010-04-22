@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Helpers</title>
+  	<script src="http://js.local/jquery/jquery-1.2.6.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="http://js.local/qunit/qunit.css" type="text/css" media="screen" />
+    <script type="text/javascript" src="http://js.local/qunit/qunit.js"></script>
+    <script type="text/javascript" src="http://js.local/bluff/number.js"></script>
+    <script type="application/javascript">
+      $(document).ready(function(){
+        test("Number.upto", function() {
+          equal((1).upto(5), [1, 2, 3, 4, 5], "1.upto(5) is 1..5");
+        });
+      })
+    </script>
+  </head>
+  <body>
+    <h1 id="qunit-header">Bluff it</h1>
+   <h2 id="qunit-banner"></h2>
+   <h2 id="qunit-userAgent"></h2>
+   <ol id="qunit-tests"></ol>
+  </body>
+</html>
