@@ -103,6 +103,17 @@
           equal(validDiceRolls.length, 5, "a dice roll is between 32 and 21")
         })
 
+        test("taking turns", function(){
+          var theGame = Object.create(game);
+          var playerOne = player.create("Alice", theGame);
+          var playerTwo = player.create("Bob", theGame);
+          theGame.addPlayer(playerOne);
+          theGame.addPlayer(playerTwo);
+          equal( theGame.nextPlayer, playerOne, "first player is first");
+          theGame.play();
+          equal( theGame.nextPlayer, playerTwo, "then comes the second");
+        })
+
         test("winning when bluff unduly called", function(){
           var theGame = Object.create(game);
           var playerOne = player.create("Alice", theGame);
