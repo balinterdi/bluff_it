@@ -60,13 +60,27 @@
         },
         youLost: function() {
           this.state = "lost";
+        },
+        play: function() {
+
         }
       }
 
       var game = {
         highestRoll : null,
+        players : [],
+        playerIndex : 0,
         setHighestRoll : function(roll) {
           this.currentRoll = roll;
+        },
+        addPlayer : function(player) {
+          this.players.push(player);
+        },
+        nextPlayer : function() {
+          return this.players[this.playerIndex];
+        },
+        playerMoved : function() {
+          this.playerIndex = (this.playerIndex + 1) % this.players.length;
         },
         bluffCallHit : function(caller, called, result) {
           if ( result ) {
@@ -77,6 +91,11 @@
             called.youWon();
             caller.youLost();
           }
+        },
+        play : function() {
+          console.log("Game.play");
+          this.nextPlayer().play();
+          this.playerMoved();
         }
       }
       $(document).ready(function(){
@@ -109,9 +128,11 @@
           var playerTwo = player.create("Bob", theGame);
           theGame.addPlayer(playerOne);
           theGame.addPlayer(playerTwo);
-          equal( theGame.nextPlayer, playerOne, "first player is first");
+          ok( theGame.nextPlayer() === playerOne, "first player is first");
+          // hmm, that dies with a Max. recursion depth exceeded
+          // equal( theGame.nextPlayer(), playerOne, "first player is first");
           theGame.play();
-          equal( theGame.nextPlayer, playerTwo, "then comes the second");
+          ok( theGame.nextPlayer() === playerTwo, "then comes the second");
         })
 
         test("winning when bluff unduly called", function(){
