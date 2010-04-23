@@ -1,1 +1,2 @@
 * make the attributes (e.g roll, announced) be protected by closures (as seen in the Good Parts book) so that they really can only be accessed by the setters and getters
+* eliminate this.game.highestRoll access (refactor into a getter)

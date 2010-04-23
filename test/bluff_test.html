@@ -18,8 +18,22 @@
       var roll = {
         ROLLS : ["32", "41", "42", "43", "51", "52", "53", "54", "61", "62", "63", "64", "65",
                  "11", "22", "33", "44", "55", "66", "21"],
+        create : function(rollValue) {
+          var r = Object.create(this);
+          r.value = rollValue;
+          return r;
+        },
         isValid : function(r) {
           return this.ROLLS.indexOf(r) != -1;
+        },
+        rank : function() {
+          return this.ROLLS.indexOf(this.value);
+        },
+        biggerThan : function(otherRoll) {
+          return  this.rank() > otherRoll.rank();
+        },
+        higher : function(rollValue) {
+          return this.ROLLS[this.rank(rollValue) + 1];
         }
       }
 
@@ -29,14 +43,18 @@
         announced : null,
         game : null,
         state : null,
-        create : function(name, game) {
+        bluffStrategy : function(_, roll) { return roll },
+        bluffCallStrategy : function(_, _) { return true },
+        create : function(name, game, bluffStrategy, bluffCallStrategy) {
           var plyr = Object.create(this);
           plyr.name = name;
           plyr.game = game;
+          plyr.bluffStrategy = bluffStrategy || this.bluffStrategy;
+          plyr.bluffCallStrategy = bluffCallStrategy || this.bluffCallStrategy;
           return plyr;
         },
         rollTheDice : function() {
-          return "21";
+          return "22";
         },
         setCurrentRoll : function(roll) {
           this.roll = roll;
@@ -44,10 +62,15 @@
         announce : function(roll) {
           this.announced = roll;
         },
-        callBluff : function(otherPlayer) {
-          var bluffFoundOut = otherPlayer.hasBluffed();
-          this.game.bluffCallHit(this, otherPlayer, bluffFoundOut);
-          return bluffFoundOut;
+        makeYourMove : function() {
+          var r = this.rollTheDice();
+          this.setCurrentRoll(r);
+          var announced = this.bluffStrategy(this.game.highestRoll, r);
+          this.announce(announced);
+          return announced;
+        },
+        callBluffOrNot : function(otherPlayer, announcedRoll) {
+          return this.bluffCallStrategy(this.game.highestRoll, announcedRoll);
         },
         hasBluffed : function() {
           return this.roll !== this.announced;
@@ -60,21 +83,21 @@
         },
         youLost: function() {
           this.state = "lost";
-        },
-        play: function() {
-
         }
       }
 
       var game = {
-        highestRoll : null,
         players : [],
         playerIndex : 0,
+        highestRoll : null,
         setHighestRoll : function(roll) {
-          this.currentRoll = roll;
+          this.highestRoll = roll;
         },
         addPlayer : function(player) {
           this.players.push(player);
+        },
+        clearPlayers : function() {
+          this.players = [];
         },
         nextPlayer : function() {
           return this.players[this.playerIndex];
@@ -82,8 +105,9 @@
         playerMoved : function() {
           this.playerIndex = (this.playerIndex + 1) % this.players.length;
         },
-        bluffCallHit : function(caller, called, result) {
-          if ( result ) {
+        assessBluff : function(caller, called) {
+          var wasBluff = called.hasBluffed();
+          if ( wasBluff ) {
             caller.youWon();
             called.youLost();
           }
@@ -92,10 +116,18 @@
             caller.youLost();
           }
         },
-        play : function() {
-          console.log("Game.play");
-          this.nextPlayer().play();
+        endGame : function() {
+          this.state = "finished";
+        },
+        nextTurn : function() {
+          var playerToRoll = this.nextPlayer();
+          var announcedRoll = playerToRoll.makeYourMove();
           this.playerMoved();
+          var bluffCalled = this.nextPlayer().callBluffOrNot(playerToRoll, announcedRoll);
+          if ( bluffCalled ) {
+            this.assessBluff(this.nextPlayer(), playerToRoll);
+            this.endGame();
+          }
         }
       }
       $(document).ready(function(){
@@ -114,6 +146,11 @@
           equal( roll.isValid("23"), false, "23 is not a valid roll, the bigger number has to be put first");
         });
 
+        test("roll.biggerThan", function(){
+          ok( roll.create("11").biggerThan(roll.create("65")), "11 is bigger than 65" );
+          ok( roll.create("21").biggerThan(roll.create("32")), "21 is bigger than 32" );
+        })
+
         test("player.rollTheDice", function() {
           var validDiceRolls = $.grep((1).upto(5), function(_, i){
             var r = player.rollTheDice();
@@ -124,37 +161,63 @@
 
         test("taking turns", function(){
           var theGame = Object.create(game);
-          var playerOne = player.create("Alice", theGame);
-          var playerTwo = player.create("Bob", theGame);
+          theGame.clearPlayers();
+
+          var neverBluff = function(_, roll) { return roll }
+          var neverCallBluff = function(_, _) { return false }
+
+          var playerOne = player.create("Alice", theGame, neverBluff);
+          var playerTwo = player.create("Bob", theGame, null, neverCallBluff);
+
           theGame.addPlayer(playerOne);
           theGame.addPlayer(playerTwo);
+
           ok( theGame.nextPlayer() === playerOne, "first player is first");
           // hmm, that dies with a Max. recursion depth exceeded
           // equal( theGame.nextPlayer(), playerOne, "first player is first");
-          theGame.play();
+          theGame.nextTurn();
+
           ok( theGame.nextPlayer() === playerTwo, "then comes the second");
         })
 
-        test("winning when bluff unduly called", function(){
+        test("winning when bluff wrongly called", function(){
           var theGame = Object.create(game);
-          var playerOne = player.create("Alice", theGame);
-          var playerTwo = player.create("Bob", theGame);
-          theGame.setHighestRoll("43");
-          playerOne.setCurrentRoll("22");
-          playerOne.announce("22");
-          playerTwo.callBluff(playerOne);
+          // clearing the players is necessary, otherwise theGame somehow
+          // brings back a reference to a game object from a test that ran
+          // earlier and so subsequent tests will break
+          theGame.clearPlayers();
+
+          var neverBluff = function(_, roll) { return roll }
+          var alwaysCallBluff = function(_, _) { return true }
+
+          var playerOne = player.create("Alice", theGame, neverBluff);
+          var playerTwo = player.create("Bob", theGame, null, alwaysCallBluff);
+
+          theGame.addPlayer(playerOne);
+          theGame.addPlayer(playerTwo);
+          theGame.nextTurn();
+
           ok( !playerTwo.hasWon(), "player loses when calling a bluff that wasn't");
           ok( playerOne.hasWon(), "player wins if opponent says he bluffed but he did not");
         });
 
         test("winning when bluff is found out", function(){
           var theGame = Object.create(game);
-          var playerOne = player.create("Alice", theGame);
-          var playerTwo = player.create("Bob", theGame);
-          theGame.setHighestRoll("43");
-          playerOne.setCurrentRoll("41");
-          playerOne.announce("22");
-          playerTwo.callBluff(playerOne);
+          // clearing the players is necessary, otherwise theGame somehow
+          // brings back a reference to a game object from a test that ran
+          // earlier and so subsequent tests will break
+          theGame.clearPlayers();
+
+          var alwaysBluff = function(_, r) { return roll.higher(r) }
+          var alwaysCallBluff = function(_, _) { return true }
+
+          var playerOne = player.create("Alice", theGame, alwaysBluff);
+          var playerTwo = player.create("Bob", theGame, null, alwaysCallBluff);
+
+          theGame.addPlayer(playerOne);
+          theGame.addPlayer(playerTwo);
+          theGame.nextTurn();
+
           ok( playerTwo.hasWon(), "player wins if says opponent has bluffed and the opponent did");
           ok( !playerOne.hasWon(), "player loses if bluffs and is found out");
         })
